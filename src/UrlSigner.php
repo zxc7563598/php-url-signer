@@ -31,18 +31,16 @@ class UrlSigner
      * 链接加密
      * 
      * @param string $url 下载资源接口URL
-     * @param string $path 下载文件路径
+     * @param array $params 需要传递的参数
      * @param null|int $expire 有效时间，秒
      * 
      * @return string 下载链接
      */
-    public function sign(string $url, string $path, ?int $expire = null): string
+    public function sign(string $url, string $params, ?int $expire = null): string
     {
         $params = [];
         $params['_t'] = time();
         $params['_e'] = $expire ?? $this->defaultExpire;
-        // 加密 file 参数（可选）
-        $params['file'] = Encryptor::encrypt($path, $this->secretKey);
         // 生成签名
         $params['_sign'] = Helpers::generateSignature($params, $this->secretKey);
         // 拼接到URL
@@ -70,14 +68,26 @@ class UrlSigner
     }
 
     /**
-     * 解密参数
+     * 加密参数
      * 
-     * @param string $file 加密的下载文件路径
+     * @param string $value 
      * 
      * @return string 
      */
-    public function decryptFileParam(string $file): string
+    public function encrypt(string $value): string
     {
-        return Encryptor::decrypt($file, $this->secretKey);
+        return Encryptor::encrypt($value, $this->secretKey);
+    }
+
+    /**
+     * 解密参数
+     * 
+     * @param string $value 需要解密的数据
+     * 
+     * @return string 
+     */
+    public function decryptParam(string $value): string
+    {
+        return Encryptor::decrypt($value, $this->secretKey);
     }
 }
