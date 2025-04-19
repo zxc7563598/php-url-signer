@@ -23,7 +23,6 @@ class Installer
         if (file_exists($configFile)) {
             $config = include $configFile;
             if (!empty($config['secretKey'])) {
-                echo "UrlSigner: 密钥已存在，跳过生成\n";
                 return;
             }
         }

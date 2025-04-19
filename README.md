@@ -63,7 +63,7 @@ if (!$signer->validate($_GET)) {
     exit('非法请求或链接已过期');
 }
 
-$file = $signer->decryptFileParam($_GET['file']);
+$file = $signer->decryptParam($_GET['file']);
 // 继续处理文件下载逻辑
 ```
 

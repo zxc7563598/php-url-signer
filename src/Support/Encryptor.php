@@ -19,7 +19,6 @@ class Encryptor
         $key = hash('sha256', $key, true);
         $iv = substr($key, 0, 16);
         $encrypted = openssl_encrypt($data, self::METHOD, $key, OPENSSL_RAW_DATA, $iv);
-        echo '[加密信息]' . base64_encode($encrypted) . PHP_EOL;
         return base64_encode($encrypted);
     }
 
