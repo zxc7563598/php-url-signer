@@ -28,7 +28,7 @@ class UrlSigner
     }
 
     /**
-     * 生成签名
+     * 生成签名后的链接
      * 
      * @param string $url 下载资源接口URL
      * @param array $params 需要传递的参数
