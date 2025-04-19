@@ -21,7 +21,7 @@ class UrlSigner
         $config = array_merge([
             'secretKey' => '',
             'default_expire' => 3600,
-        ], $config ?: include __DIR__ . '/../config/urlsigner.php');
+        ], $config ?: Installer::generateKey());
 
         $this->secretKey = $config['secretKey'];
         $this->defaultExpire = $config['default_expire'];
@@ -36,7 +36,7 @@ class UrlSigner
      * 
      * @return string 下载链接
      */
-    public function sign(string $url, string $params, ?int $expire = null): string
+    public function sign(string $url, array $params, ?int $expire = null): string
     {
         $params = [];
         $params['_t'] = time();
