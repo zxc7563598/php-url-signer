@@ -1,28 +1,20 @@
 {
-    "name": "hejunjie/url-signer",
-    "description": "用于生成带签名和加密保护的URL链接的PHP工具包，适用于需要保护资源访问的场景。",
-    "type": "library",
-    "license": "MIT",
-    "autoload": {
-        "psr-4": {
-            "Hejunjie\\UrlSigner\\": "src/"
-        }
-    },
-    "authors": [
-        {
-            "name": "何俊杰",
-            "email": "junjie.he.925@gmail.com"
-        }
-    ],
-    "require": {
-        "php": ">=8.1"
-    },
-    "scripts": {
-        "post-install-cmd": [
-            "Hejunjie\\UrlSigner\\Installer::generateKey"
-        ],
-        "post-update-cmd": [
-            "Hejunjie\\UrlSigner\\Installer::generateKey"
-        ]
+  "name": "hejunjie/url-signer",
+  "description": "用于生成带签名和加密保护的URL链接的PHP工具包，适用于需要保护资源访问的场景。",
+  "type": "library",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "Hejunjie\\UrlSigner\\": "src/"
     }
+  },
+  "authors": [
+    {
+      "name": "何俊杰",
+      "email": "junjie.he.925@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=8.1"
+  }
 }
