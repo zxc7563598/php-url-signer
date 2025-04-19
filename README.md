@@ -67,30 +67,69 @@ $file = $signer->decryptParam($_GET['file']);
 // 继续处理文件下载逻辑
 ```
 
-## 🧠 原理说明
+## 🧠 使用示例 - 生成下载链接
 
-所有参数按字典序排序，使用 HMAC-SHA256 和 secretKey 生成签名。
+以 webman 为例
 
-默认附带 _t（时间戳）和 _e（有效期）两个参数。
+1. 创建一个下载文件的方法
+    ```php
+    <?php
 
-验证签名时会自动判断是否超时失效。
+    namespace app\controller;
 
-file 参数可加密后传输，避免资源路径泄露。
+    use support\Request;
+    use support\Response;
+    use Hejunjie\UrlSigner\UrlSigner;
 
-## 🧭 用途 & 初衷
-有时候，我们只想简单地保护一个链接，不想上 Redis、不想查数据库、不想绕一大圈。
+    class DownloadController
+    {
 
-比如：
+        /**
+         * 下载文件通用方法
+         * 
+         * @param string $path 需要下载的文件路径
+         * @method GET
+         * 
+         * @return Response
+         */
+        public function download(Request $request): Response
+        {
+            // 获取所有请求参数
+            $param = $request->all();
+            // 验证签名有效性
+            $urlSigner = new UrlSigner();
+            // 如果自定义 secretKey 则可以在构建类时传入配置信息
+            // $sign = new UrlSigner([
+            //     'secretKey' => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // 32字符长度字符串
+            //     'default_expire' => 3600, // 默认有效期（秒）
+            // ]);
+            $sign = $urlSigner->validate($param);
+            if ($sign) {
+                // 签名验证成功，正常处理后续逻辑，如果有加密参数可解密，成功则继续处理，失败返回 false
+                $path = $urlSigner->decryptParam($param['path']);
+                if ($path) {
+                    // 解密 path 参数成功，下载文件
+                    return response()->download($path);
+                }
+            }
+            return response();
+        }
+    }
+    ```
+2. 生成下载链接，在需要生成下载链接的地方：
+    ```php
+    $url = '指向第一步 download 方法的链接';
+    $path = '需要下载的文件路径';
 
-- 做个下载接口，希望别人别乱改参数瞎访问；
-- 想加个链接时效，几分钟内有效，过期就失效；
-- 不想把文件路径明文暴露出来，哪怕只是个 PDF；
+    $urlSigner = new UrlSigner();
+    // 生成 60 秒后到期的下载链接
+    $download_url = $urlSigner->sign($url, [
+        'path' => $urlSigner->encrypt($path)
+        // 如果不加密，则不需要调用 encrypt 方法，对应获取参数的方法中也不需要调用 decryptParam 方法
+    ], 60);
 
-所以我就写了这个小工具，签名 + 加密，够用、轻巧、易接入，
-
-不依赖任何扩展，不依赖 Redis，纯 PHP 就能跑，适合做一些接口层的小保护。
-
-不是什么黑科技，但胜在省心实用。
+    echo $download_url;
+    ```
 
 ## 🔧 更多工具包（可独立使用，也可统一安装）
 
