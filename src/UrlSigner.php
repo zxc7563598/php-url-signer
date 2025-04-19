@@ -28,7 +28,7 @@ class UrlSigner
     }
 
     /**
-     * 链接加密
+     * 生成签名
      * 
      * @param string $url 下载资源接口URL
      * @param array $params 需要传递的参数
@@ -38,7 +38,6 @@ class UrlSigner
      */
     public function sign(string $url, array $params, ?int $expire = null): string
     {
-        $params = [];
         $params['_t'] = time();
         $params['_e'] = $expire ?? $this->defaultExpire;
         // 生成签名
