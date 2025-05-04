@@ -1,43 +1,50 @@
 # hejunjie/url-signer
 
-一个用于生成和验证带签名的 URL 的工具类，支持设置有效期与参数加密。可用于接口防篡改、防盗链、下载链接保护等场景。
+<div align="center">
+  <a href="./README.md">English</a>｜<a href="./README.zh-CN.md">简体中文</a>
+  <hr width="50%"/>
+</div>
 
-> 基于 PHP8 开发，默认支持 SHA256 签名，内置 AES-256-CBC 参数加密能力。
+A PHP library for generating URLs with encryption and signature protection—useful for secure resource access and tamper-proof links.
 
----
-
-## ✨ 功能特性
-
-- ✅ URL 签名与验签
-- ✅ 签名过期校验
-- ✅ 支持 file 参数加密/解密
-- ✅ 自动生成密钥配置（安装时）
-- ✅ 无需依赖 Redis、数据库等额外服务
+> Built with PHP 8, this library supports SHA256 signing by default and includes built-in AES-256-CBC parameter encryption.
 
 ---
 
-## 📦 安装方法
+## ✨ Features
+
+- ✅ URL Signing & Verification
+- ✅ Signature Expiration Validation
+- ✅ Support for Encrypting/Decrypting the `file` Parameter
+- ✅ Auto-Generated Key Configuration (on Installation)
+- ✅ No Dependency on Redis, Databases, or Other Services
+
+---
+
+## 📦 Installation
+
+Install via Composer:
 
 ```bash
 composer require hejunjie/url-signer
 ```
 
-安装后会自动生成密钥配置文件：`config/urlsigner.php`。
+A key configuration file will be automatically generated after installation: `config/urlsigner.php`。
 
-默认配置文件路径为 config/urlsigner.php，结构如下：
+The default configuration file path is `config/urlsigner.php`, with the following structure:
 
 ```php
 <?php
 
 return [
-    'secretKey' => '自动生成的密钥字符串',
-    'default_expire' => 3600, // 默认有效期（秒）
+    'secretKey' => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // 32-character length string
+    'default_expire' => 3600, // Default expiration time (in seconds)
 ];
 ```
 
-## 🚀 快速使用
+## 🚀 Quick Start
 
-### 生成签名链接
+### Generate Signed URL
 
 ```php
 use Hejunjie\UrlSigner\UrlSigner;
@@ -48,10 +55,10 @@ $signedUrl = $signer->sign('https://yourdomain.com/download', [
 ]);
 
 echo $signedUrl;
-// https://yourdomain.com/download?file=加密内容&_t=时间戳&_e=有效期&_sign=签名
+// https://yourdomain.com/download?file=EncryptedContent&_t=Timestamp&_e=ExpirationTime&_sign=Signature
 ```
 
-### 验证签名请求
+### Validate Signed Request
 
 ```php
 use Hejunjie\UrlSigner\UrlSigner;
@@ -60,18 +67,18 @@ $signer = new UrlSigner();
 
 if (!$signer->validate($_GET)) {
     http_response_code(403);
-    exit('非法请求或链接已过期');
+    exit('Invalid request or the link has expired');
 }
 
 $file = $signer->decryptParam($_GET['file']);
-// 继续处理文件下载逻辑
+// Continue processing the file download logic
 ```
 
-## 🧠 使用示例 - 生成下载链接
+## 🧠 Usage Example – Generate a Download Link
 
-以 webman 为例
+Using Webman as an example
 
-1. 创建一个下载文件的方法
+1. Create a method for downloading a file:
     ```php
     <?php
 
@@ -85,30 +92,30 @@ $file = $signer->decryptParam($_GET['file']);
     {
 
         /**
-         * 下载文件通用方法
+         * Generic Method for File Download
          * 
-         * @param string $path 需要下载的文件路径
+         * @param string $path File Path to Download
          * @method GET
          * 
          * @return Response
          */
         public function download(Request $request): Response
         {
-            // 获取所有请求参数
+            // Get all request parameters
             $param = $request->all();
-            // 验证签名有效性
+            // Validate the signature validity
             $urlSigner = new UrlSigner();
-            // 如果自定义 secretKey 则可以在构建类时传入配置信息
+            // If a custom `secretKey` is used, it can be passed as configuration when instantiating the class
             // $sign = new UrlSigner([
-            //     'secretKey' => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // 32字符长度字符串
-            //     'default_expire' => 3600, // 默认有效期（秒）
+            //     'secretKey' => 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx', // 32-character length string
+            //     'default_expire' => 3600, // Default expiration time (in seconds)
             // ]);
             $sign = $urlSigner->validate($param);
             if ($sign) {
-                // 签名验证成功，正常处理后续逻辑，如果有加密参数可解密，成功则继续处理，失败返回 false
+                // If the signature is valid, proceed with the subsequent logic. If there are encrypted parameters, attempt decryption. If successful, continue processing; if failed, return false
                 $path = $urlSigner->decryptParam($param['path']);
                 if ($path) {
-                    // 解密 path 参数成功，下载文件
+                    // If the path parameter is successfully decrypted, proceed to download the file
                     return response()->download($path);
                 }
             }
@@ -116,49 +123,52 @@ $file = $signer->decryptParam($_GET['file']);
         }
     }
     ```
-2. 生成下载链接，在需要生成下载链接的地方：
+2. Generate a download link, where a download link is needed:
     ```php
-    $url = '指向第一步 download 方法的链接';
-    $path = '需要下载的文件路径';
+    $url = 'Link to the download method from the first step';
+    $path = 'File path to be downloaded';
 
     $urlSigner = new UrlSigner();
-    // 生成 60 秒后到期的下载链接
+    // Generate a download link that expires in 60 seconds
     $download_url = $urlSigner->sign($url, [
         'path' => $urlSigner->encrypt($path)
-        // 如果不加密，则不需要调用 encrypt 方法，对应获取参数的方法中也不需要调用 decryptParam 方法
+        // If no encryption is required, the encrypt method does not need to be called, and the decryptParam method does not need to be called in the corresponding parameter retrieval method
     ], 60);
 
     echo $download_url;
     ```
 
-## 🔧 更多工具包（可独立使用，也可统一安装）
+## 🔧 Additional Toolkits (Can be used independently or installed together)
 
-本项目最初是从 [hejunjie/tools](https://github.com/zxc7563598/php-tools) 拆分而来，如果你想一次性安装所有功能组件，也可以使用统一包：
+This project was originally extracted from [hejunjie/tools](https://github.com/zxc7563598/php-tools).
+To install all features in one go, feel free to use the all-in-one package:
 
 ```bash
 composer require hejunjie/tools
 ```
 
-当然你也可以按需选择安装以下功能模块：
+Alternatively, feel free to install only the modules you need：
 
-[hejunjie/cache](https://github.com/zxc7563598/php-cache) - 多层缓存系统，基于装饰器模式。
+[hejunjie/utils](https://github.com/zxc7563598/php-utils) - A lightweight and practical PHP utility library that offers a collection of commonly used helper functions for files, strings, arrays, and HTTP requests—designed to streamline development and support everyday PHP projects.
 
-[hejunjie/china-division](https://github.com/zxc7563598/php-china-division) - 中国省市区划分数据包。
+[hejunjie/cache](https://github.com/zxc7563598/php-cache) - A layered caching system built with the decorator pattern. Supports combining memory, file, local, and remote caches to improve hit rates and simplify cache logic.
 
-[hejunjie/error-log](https://github.com/zxc7563598/php-error-log) - 责任链日志上报系统。
+[hejunjie/china-division](https://github.com/zxc7563598/php-china-division) - Regularly updated dataset of China's administrative divisions with ID-card address parsing. Distributed via Composer and versioned for use in forms, validation, and address-related features
 
-[hejunjie/utils](https://github.com/zxc7563598/php-utils) - 常用工具方法集合。
+[hejunjie/error-log](https://github.com/zxc7563598/php-error-log) - An error logging component using the Chain of Responsibility pattern. Supports multiple output channels like local files, remote APIs, and console logs—ideal for flexible and scalable logging strategies.
 
-[hejunjie/address-parser](https://github.com/zxc7563598/php-address-parser) - 收货地址智能解析工具，支持从非结构化文本中提取用户/地址信息。
+[hejunjie/mobile-locator](https://github.com/zxc7563598/php-mobile-locator) - A mobile number lookup library based on Chinese carrier rules. Identifies carriers and regions, suitable for registration checks, user profiling, and data archiving.
 
-[hejunjie/mobile-locator](https://github.com/zxc7563598/php-mobile-locator) - 国内手机号归属地 & 运营商识别。
+[hejunjie/address-parser](https://github.com/zxc7563598/php-address-parser) - An intelligent address parser that extracts name, phone number, ID number, region, and detailed address from unstructured text—perfect for e-commerce, logistics, and CRM systems.
 
-[hejunjie/google-authenticator](https://github.com/zxc7563598/php-google-authenticator) - Google Authenticator 及类似应用的密钥生成、二维码创建和 OTP 验证。
+[hejunjie/url-signer](https://github.com/zxc7563598/php-url-signer) - A PHP library for generating URLs with encryption and signature protection—useful for secure resource access and tamper-proof links.
 
-[hejunjie/simple-rule-engine](https://github.com/zxc7563598/php-simple-rule-engine) - 一个轻量、易用的 PHP 规则引擎，支持多条件组合、动态规则执行。
+[hejunjie/google-authenticator](https://github.com/zxc7563598/php-google-authenticator) - A PHP library for generating and verifying Time-Based One-Time Passwords (TOTP). Compatible with Google Authenticator and similar apps, with features like secret generation, QR code creation, and OTP verification.
 
-👀 所有包都遵循「轻量实用、解放双手」的原则，能单独用，也能组合用，自由度高，欢迎 star 🌟 或提 issue。
+[hejunjie/simple-rule-engine](https://github.com/zxc7563598/php-simple-rule-engine) - A lightweight and flexible PHP rule engine supporting complex conditions and dynamic rule execution—ideal for business logic evaluation and data validation.
+
+👀 All packages follow the principles of being lightweight and practical — designed to save you time and effort. They can be used individually or combined flexibly. Feel free to ⭐ star the project or open an issue anytime!
 
 ---
 
-该库后续将持续更新，添加更多实用功能。欢迎大家提供建议和反馈，我会根据大家的意见实现新的功能，共同提升开发效率。
+This library will continue to be updated with more practical features. Suggestions and feedback are always welcome — I’ll prioritize new functionality based on community input to help improve development efficiency together.
