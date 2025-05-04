@@ -1,6 +1,6 @@
 {
   "name": "hejunjie/url-signer",
-  "description": "用于生成带签名和加密保护的URL链接的PHP工具包，适用于需要保护资源访问的场景。",
+  "description": "A PHP library for generating URLs with encryption and signature protection—useful for secure resource access and tamper-proof links.",
   "type": "library",
   "license": "MIT",
   "autoload": {
