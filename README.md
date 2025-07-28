@@ -9,7 +9,7 @@ A PHP library for generating URLs with encryption and signature protection—use
 
 > Built with PHP 8, this library supports SHA256 signing by default and includes built-in AES-256-CBC parameter encryption.
 
-**This project has been parsed by Zread. If you need a quick overview of the project, you can click on the number of views to view it：[Understand this project](https://zread.ai/zxc7563598/php-url-signer)**
+**This project has been parsed by Zread. If you need a quick overview of the project, you can click here to view it：[Understand this project](https://zread.ai/zxc7563598/php-url-signer)**
 
 ---
 
